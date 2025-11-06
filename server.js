@@ -57,6 +57,23 @@ app.get('/equipment', requireAuth, async (_req, res) => {
   const r = await pool.query('SELECT * FROM equipment ORDER BY id DESC')
   res.json(r.rows)
 })
+// --- DIAGNÓSTICO (temporário) ---
+app.get('/diag', async (_req, res) => {
+  try {
+    const db = await pool.query('SELECT 1');           // testa DB
+    const users = await pool.query('SELECT COUNT(*) FROM users');
+    const hasJwt = !!process.env.JWT_SECRET;
+    res.json({
+      ok: true,
+      db: db?.rows?.length === 1,
+      users: Number(users.rows[0].count || 0),
+      jwtSecretPresent: hasJwt
+    });
+  } catch (e) {
+    console.error('DIAG ERROR:', e);
+    res.status(500).json({ ok: false, error: String(e) });
+  }
+});
 
 const port = process.env.PORT || 4000
 const host = process.env.HOST || '0.0.0.0'
